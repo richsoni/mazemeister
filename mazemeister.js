@@ -9,6 +9,26 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const e = React.createElement;
 
+const STATUS = {
+  PLAYING:   'playing',
+  PAUSED:    'paused',
+  WON:       'won',
+  GAME_OVER: 'gameOver',
+  COMPLETE:  'complete',
+};
+
+function getEntityAt(entities, x, y) {
+  return entities.find(en => en.x === x && en.y === y);
+}
+
+function isEnemy(entity) {
+  return entity.gameFunction === 'kill' || entity.gameFunction === 'kill_move';
+}
+
+const CARDINAL_DIRS = [
+  { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 },
+];
+
 const ENTITY_CONFIG = {
   staticEnemy: { templateSymbol: '1', renderSymbol: '■', gameFunction: 'kill',      color: 'red'     },
   movingEnemy: { templateSymbol: '2', renderSymbol: '♦', gameFunction: 'kill_move', color: 'magenta' },
@@ -47,7 +67,7 @@ function parseLevel(levelNumber) {
     }
   }
 
-  return { levelNumber, maze, entities, playerX, playerY, exitX, exitY, width, height, won: false, gameOver: false, paused: false, gameComplete: false };
+  return { levelNumber, maze, entities, playerX, playerY, exitX, exitY, width, height, status: STATUS.PLAYING };
 }
 
 function MazeGame({ initialLevel }) {
@@ -55,7 +75,9 @@ function MazeGame({ initialLevel }) {
   const { stdout } = useStdout();
   const [state, setState] = useState(() => parseLevel(initialLevel));
 
-  // Keep ref in sync for game loop (avoids stale closures)
+  // The game loop interval is created once (empty dep array) but needs fresh state
+  // each tick. stateRef.current is updated after every render, so reading it inside
+  // the interval always gives the latest values without recreating the interval.
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -63,13 +85,12 @@ function MazeGame({ initialLevel }) {
   useEffect(() => {
     const interval = setInterval(() => {
       const s = stateRef.current;
-      if (s.gameOver || s.won || s.paused) return;
+      if (s.status !== STATUS.PLAYING) return;
 
       setState(prev => {
         const newEntities = prev.entities.map(entity => {
           if (entity.gameFunction !== 'kill_move') return entity;
-          const dirs = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
-          const valid = dirs.filter(({ x: dx, y: dy }) => {
+          const valid = CARDINAL_DIRS.filter(({ x: dx, y: dy }) => {
             const nx = entity.x + dx, ny = entity.y + dy;
             return prev.maze[ny]?.[nx] === ' ' &&
               !prev.entities.some(other => other !== entity && other.x === nx && other.y === ny);
@@ -80,11 +101,10 @@ function MazeGame({ initialLevel }) {
         });
 
         const hitPlayer = newEntities.some(en =>
-          (en.gameFunction === 'kill' || en.gameFunction === 'kill_move') &&
-          en.x === prev.playerX && en.y === prev.playerY
+          isEnemy(en) && en.x === prev.playerX && en.y === prev.playerY
         );
 
-        return hitPlayer ? { ...prev, gameOver: true } : { ...prev, entities: newEntities };
+        return hitPlayer ? { ...prev, status: STATUS.GAME_OVER } : { ...prev, entities: newEntities };
       });
     }, 500);
     return () => clearInterval(interval);
@@ -92,37 +112,37 @@ function MazeGame({ initialLevel }) {
 
   // Level transition after winning
   useEffect(() => {
-    if (!state.won) return;
+    if (state.status !== STATUS.WON) return;
     const timeout = setTimeout(() => {
       try {
         setState(parseLevel(state.levelNumber + 1));
       } catch {
-        setState(prev => ({ ...prev, won: false, gameComplete: true }));
+        setState(prev => ({ ...prev, status: STATUS.COMPLETE }));
       }
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [state.won, state.levelNumber]);
+  }, [state.status, state.levelNumber]);
 
   useInput((input, key) => {
-    if (state.won) return;
+    if (state.status === STATUS.WON) return;
 
-    if (state.gameComplete) {
+    if (state.status === STATUS.COMPLETE) {
       if (input === 'q') exit();
       return;
     }
 
-    if (input === 'p' && !state.gameOver) {
-      setState(prev => ({ ...prev, paused: !prev.paused }));
+    if (input === 'p' && state.status !== STATUS.GAME_OVER) {
+      setState(prev => ({ ...prev, status: prev.status === STATUS.PAUSED ? STATUS.PLAYING : STATUS.PAUSED }));
       return;
     }
 
-    if (state.gameOver) {
+    if (state.status === STATUS.GAME_OVER) {
       if (input === 'r') setState(parseLevel(state.levelNumber));
       if (input === 'q') exit();
       return;
     }
 
-    if (state.paused) return;
+    if (state.status === STATUS.PAUSED) return;
 
     let dx = 0, dy = 0;
     if (key.upArrow    || input === 'w') dy = -1;
@@ -136,37 +156,46 @@ function MazeGame({ initialLevel }) {
       const nx = prev.playerX + dx, ny = prev.playerY + dy;
       if (prev.maze[ny]?.[nx] !== ' ') return prev;
 
-      const hit = prev.entities.find(en => en.x === nx && en.y === ny);
-      if (hit && (hit.gameFunction === 'kill' || hit.gameFunction === 'kill_move')) {
-        return { ...prev, gameOver: true };
+      const hit = getEntityAt(prev.entities, nx, ny);
+      if (hit && isEnemy(hit)) {
+        return { ...prev, status: STATUS.GAME_OVER };
       }
 
-      return { ...prev, playerX: nx, playerY: ny, won: nx === prev.exitX && ny === prev.exitY };
+      const nextStatus = (nx === prev.exitX && ny === prev.exitY) ? STATUS.WON : STATUS.PLAYING;
+      return { ...prev, playerX: nx, playerY: ny, status: nextStatus };
     });
   });
 
   // Viewport / camera
-  const vpWidth  = Math.max(10, (stdout.columns || 80) - 4);
-  const vpHeight = Math.max(5,  (stdout.rows    || 24) - 4);
-  const { maze, entities, playerX, playerY, width, height, gameOver, won, paused, gameComplete, levelNumber } = state;
+  const BORDER_SIZE  = 2;  // green border columns on each side
+  const VIEWPORT_PAD = BORDER_SIZE * 2;
+  const MIN_VP_WIDTH  = 10;
+  const MIN_VP_HEIGHT = 5;
+
+  const vpWidth  = Math.max(MIN_VP_WIDTH,  (stdout.columns || 80) - VIEWPORT_PAD);
+  const vpHeight = Math.max(MIN_VP_HEIGHT, (stdout.rows    || 24) - VIEWPORT_PAD);
+  const { maze, entities, playerX, playerY, width, height, status, levelNumber } = state;
   const cameraX = Math.max(0, Math.min(width  - vpWidth,  playerX - Math.floor(vpWidth  / 2)));
   const cameraY = Math.max(0, Math.min(height - vpHeight, playerY - Math.floor(vpHeight / 2)));
   const rowCount = Math.min(height - cameraY, vpHeight);
   const colCount = Math.min(width  - cameraX, vpWidth);
   const border = ' '.repeat(colCount + 4);
 
-  const statusText = gameOver     ? 'Game Over! You hit a bad guy. Press R to restart, Q to quit.'
-    : won          ? `Level ${levelNumber} complete! Loading next level...`
-    : gameComplete ? `Congratulations! You completed all ${levelNumber - 1} levels! Press Q to exit.`
-    : paused       ? `Level ${levelNumber} - PAUSED. Press P to unpause, Q to quit.`
-    :                `Level ${levelNumber} - WASD or arrows to move. P to pause. Q to quit.`;
+  const STATUS_TEXT = {
+    [STATUS.GAME_OVER]: 'Game Over! You hit a bad guy. Press R to restart, Q to quit.',
+    [STATUS.WON]:       `Level ${levelNumber} complete! Loading next level...`,
+    [STATUS.COMPLETE]:  `Congratulations! You completed all ${levelNumber - 1} levels! Press Q to exit.`,
+    [STATUS.PAUSED]:    `Level ${levelNumber} - PAUSED. Press P to unpause, Q to quit.`,
+    [STATUS.PLAYING]:   `Level ${levelNumber} - WASD or arrows to move. P to pause. Q to quit.`,
+  };
+  const statusText = STATUS_TEXT[status];
 
   const rows = Array.from({ length: rowCount }, (_, ri) => {
     const y = ri + cameraY;
     const cells = Array.from({ length: colCount }, (_, ci) => {
       const x = ci + cameraX;
-      const entity = entities.find(en => en.x === x && en.y === y);
-      if (x === playerX && y === playerY) return e(Text, { key: x }, gameOver ? 'X' : '●');
+      const entity = getEntityAt(entities, x, y);
+      if (x === playerX && y === playerY) return e(Text, { key: x }, status === STATUS.GAME_OVER ? 'X' : '●');
       if (entity)                          return e(Text, { key: x, color: entity.color }, entity.renderSymbol);
       if (maze[y]?.[x] === '#')            return e(Text, { key: x, backgroundColor: 'gray' }, ' ');
       return                                      e(Text, { key: x }, maze[y]?.[x] || ' ');
