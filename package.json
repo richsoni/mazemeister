@@ -1,0 +1,25 @@
+{
+  "name": "mazemeister",
+  "version": "1.0.0",
+  "description": "Terminal maze game",
+  "main": "mazemeister.js",
+  "bin": {
+    "mazemeister": "./mazemeister.js"
+  },
+  "scripts": {
+    "start": "node mazemeister.js",
+    "play": "node mazemeister.js"
+  },
+  "keywords": [
+    "game",
+    "maze",
+    "terminal",
+    "cli"
+  ],
+  "author": "Rich Soni (https://github.com/richsoni)",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "terminal-kit": "^3.1.2"
+  }
+}
