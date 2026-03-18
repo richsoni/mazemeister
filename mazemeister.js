@@ -5,8 +5,8 @@ import { render, Box, Text, useInput, useStdout, useApp } from 'ink';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getEntityAt, isEnemy, createEntity, FACING_SYMBOLS } from './utils.js';
-import { ENTITY_CONFIG, MOVEMENT_BEHAVIORS, resolveEnemyCollisions } from './enemies/index.js';
+import { getEntityAt, isEnemy, createEntity } from './utils.js';
+import { ENTITY_CONFIG, MOVEMENT_BEHAVIORS, SYMBOL_FNS, resolveEnemyCollisions } from './enemies/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const e = React.createElement;
@@ -69,15 +69,20 @@ function MazeGame({ initialLevel }) {
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
+  const tickRef = useRef(0);
+
   // Game loop — created once, reads fresh state via ref
   useEffect(() => {
     const interval = setInterval(() => {
       const s = stateRef.current;
       if (s.status !== STATUS.PLAYING) return;
 
+      const tick = tickRef.current++;
+
       setState(prev => {
-        const ctx = { maze: prev.maze, entities: prev.entities };
+        const ctx = { maze: prev.maze, entities: prev.entities, playerX: prev.playerX, playerY: prev.playerY };
         const movedEntities = prev.entities.map(entity => {
+          if (entity.tickInterval && tick % entity.tickInterval !== 0) return entity;
           const behavior = MOVEMENT_BEHAVIORS[entity.movement];
           return behavior ? behavior(entity, ctx) : entity;
         });
@@ -180,7 +185,7 @@ function MazeGame({ initialLevel }) {
       const entity = getEntityAt(entities, x, y);
       if (x === playerX && y === playerY) return e(Text, { key: x }, status === STATUS.GAME_OVER ? 'X' : '●');
       if (entity) {
-        const sym = entity.facing !== undefined ? FACING_SYMBOLS[entity.facing] : entity.renderSymbol;
+        const sym = SYMBOL_FNS[entity.movement]?.(entity) ?? entity.renderSymbol;
         return e(Text, { key: x, color: entity.color }, sym);
       }
       if (maze[y]?.[x] === '#')            return e(Text, { key: x, backgroundColor: 'gray' }, ' ');

@@ -1,14 +1,9 @@
-// Left-hand rule wall follower.
-// Always tries to turn left relative to current facing; falls back to
-// straight → right → reverse. In open space this produces tight clockwise
-// circles (because "left" is always blocked, driving a loop).
+// Right-hand rule wall follower — mirror of wall_follow.
+// Always tries to turn right first; falls back to straight → left → reverse.
+// In open space this produces tight clockwise circles.
 // entity.facing: 0=N 1=E 2=S 3=W
 
 const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
-
-export function getSymbol(entity) {
-  return FACING_SYMBOLS[entity.facing ?? 0];
-}
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -18,22 +13,26 @@ const DIR_VECTORS = [
 ];
 
 export const config = {
-  templateSymbol: '3',
-  renderSymbol:   '▲',
-  color:          'cyan',
-  movement:       'wall_follow',
+  templateSymbol:  '8',
+  renderSymbol:    '▲',
+  color:           'greenBright',
+  movement:        'right_follow',
   onPlayerCollide: 'kill',
   onEnemyCollide:  'bounce',
-  initialFacing:   0, // start facing North
+  initialFacing:   0,
 };
+
+export function getSymbol(entity) {
+  return FACING_SYMBOLS[entity.facing ?? 0];
+}
 
 export function move(entity, { maze, entities }) {
   const facing = entity.facing ?? 0;
-  // Priority: left of current facing, straight, right, back
+  // Priority: right, straight, left, back
   const tryOrder = [
-    (facing + 3) % 4, // left
-    facing,           // straight
     (facing + 1) % 4, // right
+    facing,           // straight
+    (facing + 3) % 4, // left
     (facing + 2) % 4, // back
   ];
   for (const dir of tryOrder) {

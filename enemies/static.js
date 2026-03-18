@@ -7,6 +7,8 @@ export const config = {
   onEnemyCollide:  'ignore',
 };
 
+export function getSymbol(entity) { return entity.renderSymbol; }
+
 export function move(entity) {
   return entity;
 }

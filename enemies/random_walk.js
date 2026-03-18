@@ -7,7 +7,10 @@ export const config = {
   movement:       'random_walk',
   onPlayerCollide: 'kill',
   onEnemyCollide:  'ignore',
+  tickInterval:    2,
 };
+
+export function getSymbol(entity) { return entity.renderSymbol; }
 
 export function move(entity, { maze, entities }) {
   const valid = CARDINAL_DIRS.filter(({ x: dx, y: dy }) => {
