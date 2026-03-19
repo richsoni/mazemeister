@@ -1,11 +1,11 @@
 import { Enemy } from './Enemy.js';
 import { CARDINAL_DIRS } from '../utils.js';
 
-export class RandomWalk extends Enemy {
-  static templateSymbol = '2';
+export class BrownWalker extends Enemy {
+  static templateSymbol = 'W';
   static renderSymbol   = '♦';
   static color          = 'magenta';
-  static movement       = 'random_walk';
+  static movement       = 'brown_walker';
   static tickInterval   = 2;
 
   static move(entity, { maze, entities }) {

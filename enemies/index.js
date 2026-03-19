@@ -1,25 +1,27 @@
 // To add a new enemy: create enemies/<Name>.js extending Enemy, then add it here.
 
-import { StaticEnemy }  from './static.js';
-import { RandomWalk }   from './random_walk.js';
-import { WallFollow }   from './wall_follow.js';
-import { Glider }       from './glider.js';
-import { Bouncer }      from './bouncer.js';
-import { Chaser }       from './chaser.js';
-import { Tumbler }      from './tumbler.js';
-import { RightFollow }  from './right_follow.js';
+import { Hole }        from './static.js';
+import { BrownWalker } from './random_walk.js';
+import { Lex }         from './wall_follow.js';
+import { BounceRay }   from './glider.js';
+import { PingHoriz }   from './ping_horiz.js';
+import { PingVert }    from './ping_vert.js';
+import { Mag }         from './chaser.js';
+import { BrownRay }    from './tumbler.js';
+import { Dev }         from './right_follow.js';
 
 export { resolveEnemyCollisions } from './interactions.js';
 
 const ENEMIES = [
-  StaticEnemy,
-  RandomWalk,
-  WallFollow,
-  Glider,
-  Bouncer,
-  Chaser,
-  Tumbler,
-  RightFollow,
+  Hole,
+  BrownWalker,
+  Lex,
+  BounceRay,
+  PingHoriz,
+  PingVert,
+  Mag,
+  BrownRay,
+  Dev,
 ];
 
 export const ENTITY_CONFIG      = Object.fromEntries(ENEMIES.map(E => [E.movement, E.config]));

@@ -20,7 +20,7 @@ const STATUS = {
 };
 
 // Exit tile config lives here since it's not an enemy
-const EXIT_CONFIG = { templateSymbol: 'E', renderSymbol: '⍟', color: 'yellow', movement: 'static', onPlayerCollide: 'exit', onEnemyCollide: 'ignore' };
+const EXIT_CONFIG = { templateSymbol: 'E', renderSymbol: '⍟', color: 'green', movement: 'static', onPlayerCollide: 'exit', onEnemyCollide: 'ignore' };
 const ALL_ENTITY_CONFIG = { ...ENTITY_CONFIG, exit: EXIT_CONFIG };
 
 function parseLevel(levelNumber) {

@@ -1,10 +1,10 @@
-// Moves in a straight line; reverses direction when hitting a wall or enemy.
-// Waits in place only if both forward and backward are blocked.
-// entity.facing: 0=N 1=E 2=S 3=W
+// Moves horizontally; reverses direction when hitting a wall or enemy.
+// Waits in place only if both left and right are blocked.
+// entity.facing: 1=E 3=W
 
 import { Enemy } from './Enemy.js';
 
-const FACING_SYMBOLS = ['↑', '→', '↓', '←'];
+const FACING_SYMBOLS = ['∧', '›', '∨', '‹'];
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -13,19 +13,19 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export class Bouncer extends Enemy {
-  static templateSymbol = '5';
-  static renderSymbol   = '↑';
-  static color          = 'green';
-  static movement       = 'bouncer';
-  static initialFacing  = 0;
+export class PingHoriz extends Enemy {
+  static templateSymbol = '<';
+  static renderSymbol   = '›';
+  static color          = 'cyan';
+  static movement       = 'ping_horiz';
+  static initialFacing  = 1;
 
   static getSymbol(entity) {
-    return FACING_SYMBOLS[entity.facing ?? 0];
+    return FACING_SYMBOLS[entity.facing ?? 1];
   }
 
   static move(entity, { maze, entities }) {
-    const facing = entity.facing ?? 0;
+    const facing = entity.facing ?? 1;
     const reverse = (facing + 2) % 4;
 
     const canMove = (dir) => {

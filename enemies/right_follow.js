@@ -1,11 +1,11 @@
-// Right-hand rule wall follower — mirror of WallFollow.
+// Right-hand rule wall follower — mirror of Lex.
 // Always tries to turn right first; falls back to straight → left → reverse.
 // In open space this produces tight clockwise circles.
 // entity.facing: 0=N 1=E 2=S 3=W
 
 import { Enemy } from './Enemy.js';
 
-const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
+const FACING_SYMBOLS = ['◤', '◥', '◢', '◣'];
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -14,11 +14,11 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export class RightFollow extends Enemy {
-  static templateSymbol = '8';
-  static renderSymbol   = '▲';
-  static color          = 'greenBright';
-  static movement       = 'right_follow';
+export class Dev extends Enemy {
+  static templateSymbol = 'D';
+  static renderSymbol   = '◤';
+  static color          = 'blueBright';
+  static movement       = 'dev';
   static onEnemyCollide = 'bounce';
   static initialFacing  = 0;
 

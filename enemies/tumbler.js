@@ -4,7 +4,7 @@
 
 import { Enemy } from './Enemy.js';
 
-const FACING_SYMBOLS = ['↑', '→', '↓', '←'];
+const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -22,11 +22,11 @@ function shuffle(arr) {
   return a;
 }
 
-export class Tumbler extends Enemy {
-  static templateSymbol = '7';
-  static renderSymbol   = '↑';
-  static color          = 'white';
-  static movement       = 'tumbler';
+export class BrownRay extends Enemy {
+  static templateSymbol = 'R';
+  static renderSymbol   = '▲';
+  static color          = 'blue';
+  static movement       = 'brown_ray';
   static initialFacing  = 0;
 
   static getSymbol(entity) {

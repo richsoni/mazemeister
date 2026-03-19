@@ -11,11 +11,11 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export class Chaser extends Enemy {
-  static templateSymbol = '6';
-  static renderSymbol   = '◎';
-  static color          = 'blue';
-  static movement       = 'chaser';
+export class Mag extends Enemy {
+  static templateSymbol = 'M';
+  static renderSymbol   = '⊕';
+  static color          = 'red';
+  static movement       = 'mag';
 
   static move(entity, { maze, entities, playerX, playerY }) {
     const dx = playerX - entity.x;

@@ -1,9 +1,9 @@
 import { Enemy } from './Enemy.js';
 
-export class StaticEnemy extends Enemy {
-  static templateSymbol = '1';
+export class Hole extends Enemy {
+  static templateSymbol = 'H';
   static renderSymbol   = '■';
   static color          = 'red';
-  static movement       = 'static';
+  static movement       = 'hole';
   // move and getSymbol inherited from Enemy (no-op move, renderSymbol)
 }

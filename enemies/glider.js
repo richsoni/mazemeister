@@ -4,7 +4,7 @@
 
 import { Enemy } from './Enemy.js';
 
-const FACING_SYMBOLS = ['↑', '→', '↓', '←'];
+const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -13,11 +13,11 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export class Glider extends Enemy {
-  static templateSymbol = '4';
-  static renderSymbol   = '↑';
-  static color          = 'yellow';
-  static movement       = 'glider';
+export class BounceRay extends Enemy {
+  static templateSymbol = 'B';
+  static renderSymbol   = '▲';
+  static color          = 'magentaBright';
+  static movement       = 'bounce_ray';
   static initialFacing  = 0;
 
   static getSymbol(entity) {

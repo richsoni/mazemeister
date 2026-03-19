@@ -6,7 +6,7 @@
 
 import { Enemy } from './Enemy.js';
 
-const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
+const FACING_SYMBOLS = ['◤', '◥', '◢', '◣'];
 
 const DIR_VECTORS = [
   { x:  0, y: -1 }, // 0 N
@@ -15,11 +15,11 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export class WallFollow extends Enemy {
-  static templateSymbol = '3';
-  static renderSymbol   = '▲';
-  static color          = 'cyan';
-  static movement       = 'wall_follow';
+export class Lex extends Enemy {
+  static templateSymbol = 'L';
+  static renderSymbol   = '◤';
+  static color          = 'redBright';
+  static movement       = 'lex';
   static onEnemyCollide = 'bounce';
   static initialFacing  = 0;
 
