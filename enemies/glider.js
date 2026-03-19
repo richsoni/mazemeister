@@ -2,6 +2,8 @@
 // Stays put only if all four directions are blocked.
 // entity.facing: 0=N 1=E 2=S 3=W
 
+import { Enemy } from './Enemy.js';
+
 const FACING_SYMBOLS = ['↑', '→', '↓', '←'];
 
 const DIR_VECTORS = [
@@ -11,36 +13,33 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export const config = {
-  templateSymbol:  '4',
-  renderSymbol:    '↑',
-  color:           'yellow',
-  movement:        'glider',
-  onPlayerCollide: 'kill',
-  onEnemyCollide:  'ignore',
-  initialFacing:   0,
-};
+export class Glider extends Enemy {
+  static templateSymbol = '4';
+  static renderSymbol   = '↑';
+  static color          = 'yellow';
+  static movement       = 'glider';
+  static initialFacing  = 0;
 
-export function getSymbol(entity) {
-  return FACING_SYMBOLS[entity.facing ?? 0];
-}
-
-export function move(entity, { maze, entities }) {
-  const facing = entity.facing ?? 0;
-  // Priority: straight, right, left, back
-  const tryOrder = [
-    facing,           // straight
-    (facing + 1) % 4, // right
-    (facing + 3) % 4, // left
-    (facing + 2) % 4, // back
-  ];
-  for (const dir of tryOrder) {
-    const { x: dx, y: dy } = DIR_VECTORS[dir];
-    const nx = entity.x + dx, ny = entity.y + dy;
-    if (maze[ny]?.[nx] === ' ' &&
-        !entities.some(other => other !== entity && other.x === nx && other.y === ny)) {
-      return { ...entity, x: nx, y: ny, facing: dir };
-    }
+  static getSymbol(entity) {
+    return FACING_SYMBOLS[entity.facing ?? 0];
   }
-  return entity; // all directions blocked
+
+  static move(entity, { maze, entities }) {
+    const facing = entity.facing ?? 0;
+    const tryOrder = [
+      facing,           // straight
+      (facing + 1) % 4, // right
+      (facing + 3) % 4, // left
+      (facing + 2) % 4, // back
+    ];
+    for (const dir of tryOrder) {
+      const { x: dx, y: dy } = DIR_VECTORS[dir];
+      const nx = entity.x + dx, ny = entity.y + dy;
+      if (maze[ny]?.[nx] === ' ' &&
+          !entities.some(other => other !== entity && other.x === nx && other.y === ny)) {
+        return { ...entity, x: nx, y: ny, facing: dir };
+      }
+    }
+    return entity;
+  }
 }

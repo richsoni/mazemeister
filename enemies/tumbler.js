@@ -2,6 +2,8 @@
 // always trying right → left → back.
 // entity.facing: 0=N 1=E 2=S 3=W
 
+import { Enemy } from './Enemy.js';
+
 const FACING_SYMBOLS = ['↑', '→', '↓', '←'];
 
 const DIR_VECTORS = [
@@ -20,41 +22,38 @@ function shuffle(arr) {
   return a;
 }
 
-export const config = {
-  templateSymbol:  '7',
-  renderSymbol:    '↑',
-  color:           'white',
-  movement:        'tumbler',
-  onPlayerCollide: 'kill',
-  onEnemyCollide:  'ignore',
-  initialFacing:   0,
-};
+export class Tumbler extends Enemy {
+  static templateSymbol = '7';
+  static renderSymbol   = '↑';
+  static color          = 'white';
+  static movement       = 'tumbler';
+  static initialFacing  = 0;
 
-export function getSymbol(entity) {
-  return FACING_SYMBOLS[entity.facing ?? 0];
-}
-
-export function move(entity, { maze, entities }) {
-  const facing = entity.facing ?? 0;
-
-  const canMove = (dir) => {
-    const { x: dx, y: dy } = DIR_VECTORS[dir];
-    const nx = entity.x + dx, ny = entity.y + dy;
-    return maze[ny]?.[nx] === ' ' &&
-      !entities.some(other => other !== entity && other.x === nx && other.y === ny);
-  };
-
-  if (canMove(facing)) {
-    const { x: dx, y: dy } = DIR_VECTORS[facing];
-    return { ...entity, x: entity.x + dx, y: entity.y + dy };
+  static getSymbol(entity) {
+    return FACING_SYMBOLS[entity.facing ?? 0];
   }
 
-  const fallbacks = shuffle([(facing + 1) % 4, (facing + 3) % 4, (facing + 2) % 4]);
-  for (const dir of fallbacks) {
-    if (canMove(dir)) {
+  static move(entity, { maze, entities }) {
+    const facing = entity.facing ?? 0;
+
+    const canMove = (dir) => {
       const { x: dx, y: dy } = DIR_VECTORS[dir];
-      return { ...entity, x: entity.x + dx, y: entity.y + dy, facing: dir };
+      const nx = entity.x + dx, ny = entity.y + dy;
+      return maze[ny]?.[nx] === ' ' &&
+        !entities.some(other => other !== entity && other.x === nx && other.y === ny);
+    };
+
+    if (canMove(facing)) {
+      const { x: dx, y: dy } = DIR_VECTORS[facing];
+      return { ...entity, x: entity.x + dx, y: entity.y + dy };
     }
+
+    for (const dir of shuffle([(facing + 1) % 4, (facing + 3) % 4, (facing + 2) % 4])) {
+      if (canMove(dir)) {
+        const { x: dx, y: dy } = DIR_VECTORS[dir];
+        return { ...entity, x: entity.x + dx, y: entity.y + dy, facing: dir };
+      }
+    }
+    return entity;
   }
-  return entity;
 }

@@ -1,7 +1,9 @@
-// Right-hand rule wall follower — mirror of wall_follow.
+// Right-hand rule wall follower — mirror of WallFollow.
 // Always tries to turn right first; falls back to straight → left → reverse.
 // In open space this produces tight clockwise circles.
 // entity.facing: 0=N 1=E 2=S 3=W
+
+import { Enemy } from './Enemy.js';
 
 const FACING_SYMBOLS = ['▲', '▶', '▼', '◀'];
 
@@ -12,36 +14,34 @@ const DIR_VECTORS = [
   { x: -1, y:  0 }, // 3 W
 ];
 
-export const config = {
-  templateSymbol:  '8',
-  renderSymbol:    '▲',
-  color:           'greenBright',
-  movement:        'right_follow',
-  onPlayerCollide: 'kill',
-  onEnemyCollide:  'bounce',
-  initialFacing:   0,
-};
+export class RightFollow extends Enemy {
+  static templateSymbol = '8';
+  static renderSymbol   = '▲';
+  static color          = 'greenBright';
+  static movement       = 'right_follow';
+  static onEnemyCollide = 'bounce';
+  static initialFacing  = 0;
 
-export function getSymbol(entity) {
-  return FACING_SYMBOLS[entity.facing ?? 0];
-}
-
-export function move(entity, { maze, entities }) {
-  const facing = entity.facing ?? 0;
-  // Priority: right, straight, left, back
-  const tryOrder = [
-    (facing + 1) % 4, // right
-    facing,           // straight
-    (facing + 3) % 4, // left
-    (facing + 2) % 4, // back
-  ];
-  for (const dir of tryOrder) {
-    const { x: dx, y: dy } = DIR_VECTORS[dir];
-    const nx = entity.x + dx, ny = entity.y + dy;
-    if (maze[ny]?.[nx] === ' ' &&
-        !entities.some(other => other !== entity && other.x === nx && other.y === ny)) {
-      return { ...entity, x: nx, y: ny, facing: dir };
-    }
+  static getSymbol(entity) {
+    return FACING_SYMBOLS[entity.facing ?? 0];
   }
-  return entity; // completely boxed in
+
+  static move(entity, { maze, entities }) {
+    const facing = entity.facing ?? 0;
+    const tryOrder = [
+      (facing + 1) % 4, // right
+      facing,           // straight
+      (facing + 3) % 4, // left
+      (facing + 2) % 4, // back
+    ];
+    for (const dir of tryOrder) {
+      const { x: dx, y: dy } = DIR_VECTORS[dir];
+      const nx = entity.x + dx, ny = entity.y + dy;
+      if (maze[ny]?.[nx] === ' ' &&
+          !entities.some(other => other !== entity && other.x === nx && other.y === ny)) {
+        return { ...entity, x: nx, y: ny, facing: dir };
+      }
+    }
+    return entity;
+  }
 }

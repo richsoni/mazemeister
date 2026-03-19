@@ -1,14 +1,9 @@
-export const config = {
-  templateSymbol: '1',
-  renderSymbol:   '■',
-  color:          'red',
-  movement:       'static',
-  onPlayerCollide: 'kill',
-  onEnemyCollide:  'ignore',
-};
+import { Enemy } from './Enemy.js';
 
-export function getSymbol(entity) { return entity.renderSymbol; }
-
-export function move(entity) {
-  return entity;
+export class StaticEnemy extends Enemy {
+  static templateSymbol = '1';
+  static renderSymbol   = '■';
+  static color          = 'red';
+  static movement       = 'static';
+  // move and getSymbol inherited from Enemy (no-op move, renderSymbol)
 }

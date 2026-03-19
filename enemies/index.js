@@ -1,49 +1,27 @@
-// Add a new enemy: create enemies/<name>.js exporting `config` and `move`,
-// then add two lines here — one import and one entry in each map below.
+// To add a new enemy: create enemies/<Name>.js extending Enemy, then add it here.
 
-import * as staticEnemy  from './static.js';
-import * as randomWalk   from './random_walk.js';
-import * as wallFollow   from './wall_follow.js';
-import * as glider       from './glider.js';
-import * as bouncer      from './bouncer.js';
-import * as chaser       from './chaser.js';
-import * as tumbler      from './tumbler.js';
-import * as rightFollow  from './right_follow.js';
+import { StaticEnemy }  from './static.js';
+import { RandomWalk }   from './random_walk.js';
+import { WallFollow }   from './wall_follow.js';
+import { Glider }       from './glider.js';
+import { Bouncer }      from './bouncer.js';
+import { Chaser }       from './chaser.js';
+import { Tumbler }      from './tumbler.js';
+import { RightFollow }  from './right_follow.js';
 
 export { resolveEnemyCollisions } from './interactions.js';
 
-// Maps templateSymbol → full config (used by parseLevel)
-export const ENTITY_CONFIG = {
-  staticEnemy:  staticEnemy.config,
-  movingEnemy:  randomWalk.config,
-  wallFollower: wallFollow.config,
-  glider:       glider.config,
-  bouncer:      bouncer.config,
-  chaser:       chaser.config,
-  tumbler:      tumbler.config,
-  rightFollow:  rightFollow.config,
-};
+const ENEMIES = [
+  StaticEnemy,
+  RandomWalk,
+  WallFollow,
+  Glider,
+  Bouncer,
+  Chaser,
+  Tumbler,
+  RightFollow,
+];
 
-// Maps movement key → move function (used by the game loop)
-export const MOVEMENT_BEHAVIORS = {
-  [staticEnemy.config.movement]:  staticEnemy.move,
-  [randomWalk.config.movement]:   randomWalk.move,
-  [wallFollow.config.movement]:   wallFollow.move,
-  [glider.config.movement]:       glider.move,
-  [bouncer.config.movement]:      bouncer.move,
-  [chaser.config.movement]:       chaser.move,
-  [tumbler.config.movement]:      tumbler.move,
-  [rightFollow.config.movement]:  rightFollow.move,
-};
-
-// Maps movement key → symbol function (used by the renderer)
-export const SYMBOL_FNS = {
-  [staticEnemy.config.movement]:  staticEnemy.getSymbol,
-  [randomWalk.config.movement]:   randomWalk.getSymbol,
-  [wallFollow.config.movement]:   wallFollow.getSymbol,
-  [glider.config.movement]:       glider.getSymbol,
-  [bouncer.config.movement]:      bouncer.getSymbol,
-  [chaser.config.movement]:       chaser.getSymbol,
-  [tumbler.config.movement]:      tumbler.getSymbol,
-  [rightFollow.config.movement]:  rightFollow.getSymbol,
-};
+export const ENTITY_CONFIG      = Object.fromEntries(ENEMIES.map(E => [E.movement, E.config]));
+export const MOVEMENT_BEHAVIORS = Object.fromEntries(ENEMIES.map(E => [E.movement, E.move]));
+export const SYMBOL_FNS         = Object.fromEntries(ENEMIES.map(E => [E.movement, E.getSymbol]));
