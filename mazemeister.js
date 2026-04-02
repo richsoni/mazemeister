@@ -24,7 +24,7 @@ const EXIT_CONFIG = { templateSymbol: 'E', renderSymbol: '⍟', color: 'green', 
 const ALL_ENTITY_CONFIG = { ...ENTITY_CONFIG, exit: EXIT_CONFIG };
 
 function parseLevel(levelNumber) {
-  const levelPath = path.join(__dirname, 'levels', `level${levelNumber}.txt`);
+  const levelPath = path.join(__dirname, 'levels', `level${String(levelNumber).padStart(3, '0')}.txt`);
   const lines = fs.readFileSync(levelPath, 'utf8').trim().split('\n');
   const height = lines.length;
   const width = Math.max(...lines.map(l => l.length));
