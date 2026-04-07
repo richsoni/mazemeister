@@ -210,6 +210,6 @@ function MazeGame({ initialLevel }) {
 const levelArg = process.argv.slice(2).find(arg => arg.startsWith('--level='));
 const levelNumber = levelArg
   ? parseInt(levelArg.split('=')[1])
-  : (process.argv[2] ? parseInt(process.argv[2]) : 1);
+  : 1;
 
 render(e(MazeGame, { initialLevel: levelNumber }));
