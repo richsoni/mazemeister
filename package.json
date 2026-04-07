@@ -1,6 +1,6 @@
 {
   "name": "mazemeister",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Terminal maze game",
   "main": "mazemeister.js",
   "files": [
