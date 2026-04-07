@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "description": "Terminal maze game",
   "main": "mazemeister.js",
+  "files": [
+    "mazemeister.js",
+    "utils.js",
+    "enemies/",
+    "levels/"
+  ],
   "type": "module",
   "bin": {
     "mazemeister": "./mazemeister.js"
