@@ -22,16 +22,20 @@ export class Mag extends Enemy {
     const dy = playerY - entity.y;
 
     const candidates = [];
-    if (dx !== 0) candidates.push({ dir: dx > 0 ? 1 : 3, magnitude: Math.abs(dx) });
-    if (dy !== 0) candidates.push({ dir: dy > 0 ? 2 : 0, magnitude: Math.abs(dy) });
-    candidates.sort((a, b) => b.magnitude - a.magnitude);
+    if (dx !== 0) candidates.push({ dir: dx > 0 ? 1 : 3, axis: 'x' });
+    if (dy !== 0) candidates.push({ dir: dy > 0 ? 2 : 0, axis: 'y' });
 
-    for (const { dir } of candidates) {
+    const lastAxis = entity.lastAxis;
+    if (candidates.length === 2 && lastAxis) {
+      candidates.sort((a, b) => (a.axis === lastAxis ? 1 : -1));
+    }
+
+    for (const { dir, axis } of candidates) {
       const { x: ddx, y: ddy } = DIR_VECTORS[dir];
       const nx = entity.x + ddx, ny = entity.y + ddy;
       if (maze[ny]?.[nx] === ' ' &&
           !entities.some(other => other !== entity && other.x === nx && other.y === ny)) {
-        return { ...entity, x: nx, y: ny };
+        return { ...entity, x: nx, y: ny, lastAxis: axis };
       }
     }
     return entity;
