@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { render, Box, Text, useInput, useStdout, useApp } from 'ink';
 import fs from 'fs';
 import path from 'path';
@@ -94,7 +94,7 @@ function MazeGame({ initialLevel }) {
 
         return hitPlayer ? { ...prev, status: STATUS.GAME_OVER } : { ...prev, entities: newEntities };
       });
-    }, 500);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -154,19 +154,26 @@ function MazeGame({ initialLevel }) {
     });
   });
 
-  // Viewport / camera
-  const BORDER_SIZE  = 2;  // green border columns on each side
-  const VIEWPORT_PAD = BORDER_SIZE * 2;
-  const MIN_VP_WIDTH  = 10;
-  const MIN_VP_HEIGHT = 5;
-
-  const vpWidth  = Math.max(MIN_VP_WIDTH,  (stdout.columns || 80) - VIEWPORT_PAD);
-  const vpHeight = Math.max(MIN_VP_HEIGHT, (stdout.rows    || 24) - VIEWPORT_PAD);
   const { maze, entities, playerX, playerY, width, height, status, levelNumber } = state;
-  const cameraX = Math.max(0, Math.min(width  - vpWidth,  playerX - Math.floor(vpWidth  / 2)));
-  const cameraY = Math.max(0, Math.min(height - vpHeight, playerY - Math.floor(vpHeight / 2)));
-  const rowCount = Math.min(height - cameraY, vpHeight);
-  const colCount = Math.min(width  - cameraX, vpWidth);
+
+  // Memoize viewport calculations and rendering to reduce flickering
+  const viewport = useMemo(() => {
+    const BORDER_SIZE  = 2;
+    const VIEWPORT_PAD = BORDER_SIZE * 2;
+    const MIN_VP_WIDTH  = 10;
+    const MIN_VP_HEIGHT = 5;
+
+    const vpWidth  = Math.max(MIN_VP_WIDTH,  (stdout.columns || 80) - VIEWPORT_PAD);
+    const vpHeight = Math.max(MIN_VP_HEIGHT, (stdout.rows    || 24) - VIEWPORT_PAD);
+    const cameraX = Math.max(0, Math.min(width  - vpWidth,  playerX - Math.floor(vpWidth  / 2)));
+    const cameraY = Math.max(0, Math.min(height - vpHeight, playerY - Math.floor(vpHeight / 2)));
+    const rowCount = Math.min(height - cameraY, vpHeight);
+    const colCount = Math.min(width  - cameraX, vpWidth);
+
+    return { vpWidth, vpHeight, cameraX, cameraY, rowCount, colCount };
+  }, [width, height, playerX, playerY, stdout.columns, stdout.rows]);
+
+  const { cameraX, cameraY, rowCount, colCount } = viewport;
   const border = ' '.repeat(colCount + 4);
 
   const STATUS_TEXT = {
@@ -178,7 +185,7 @@ function MazeGame({ initialLevel }) {
   };
   const statusText = STATUS_TEXT[status];
 
-  const rows = Array.from({ length: rowCount }, (_, ri) => {
+  const rows = useMemo(() => Array.from({ length: rowCount }, (_, ri) => {
     const y = ri + cameraY;
     const cells = Array.from({ length: colCount }, (_, ci) => {
       const x = ci + cameraX;
@@ -197,7 +204,7 @@ function MazeGame({ initialLevel }) {
       ...cells,
       e(Text, { backgroundColor: 'green' }, '  '),
     );
-  });
+  }), [rowCount, colCount, cameraX, cameraY, entities, playerX, playerY, maze, status]);
 
   return e(Box, { flexDirection: 'column' },
     e(Text, { backgroundColor: 'green' }, border),
