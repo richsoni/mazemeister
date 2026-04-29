@@ -94,7 +94,7 @@ function MazeGame({ initialLevel }) {
 
         return hitPlayer ? { ...prev, status: STATUS.GAME_OVER } : { ...prev, entities: newEntities };
       });
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, []);
 
